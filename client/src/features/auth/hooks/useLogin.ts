@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import readAuthResponse from './readAuthResponse'
 
 function useLogin() {
+  const navigate = useNavigate()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -12,7 +15,6 @@ function useLogin() {
     setMessage('')
 
     try {
-      // Placeholder URL until the backend endpoint is implemented.
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -22,10 +24,10 @@ function useLogin() {
         }),
       })
 
-      if (!response.ok) throw new Error('Login request failed')
-      setMessage('Login request succeeded.')
-    } catch {
-      setMessage('Unable to log in. The dummy API endpoint is not connected yet.')
+      const username = await readAuthResponse(response)
+      navigate('/welcome', { replace: true, state: { username } })
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to log in. Please try again.')
     } finally {
       setIsSubmitting(false)
     }

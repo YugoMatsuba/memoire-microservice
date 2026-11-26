@@ -1,18 +1,24 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import readAuthResponse from './readAuthResponse'
 
 function useRegister() {
+  const navigate = useNavigate()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
+    if (String(formData.get('password') ?? '').length < 16) {
+      setMessage('Password must be at least 16 characters.')
+      return
+    }
     setIsSubmitting(true)
     setMessage('')
 
     try {
-      // Placeholder URL until the backend endpoint is implemented.
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -23,10 +29,10 @@ function useRegister() {
         }),
       })
 
-      if (!response.ok) throw new Error('Registration request failed')
-      setMessage('Registration request succeeded.')
-    } catch {
-      setMessage('Unable to register. The dummy API endpoint is not connected yet.')
+      const username = await readAuthResponse(response)
+      navigate('/welcome', { replace: true, state: { username } })
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to register. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
