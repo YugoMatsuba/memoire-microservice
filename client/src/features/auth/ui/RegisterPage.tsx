@@ -18,7 +18,8 @@ function RegisterPage() {
           </div>
           <div>
             <label htmlFor="password">Password</label>
-            <input id="password" name="password" type="password" autoComplete="new-password" required />
+            <input id="password" name="password" type="password" autoComplete="new-password" minLength={16} aria-describedby="password-help" required />
+            <small id="password-help">At least 16 characters.</small>
           </div>
           <div>
             <label htmlFor="username">Username</label>

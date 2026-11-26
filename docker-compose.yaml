@@ -5,6 +5,8 @@ services:
       context: ./client
       dockerfile: Dockerfile
     container_name: memoire-client
+    environment:
+      API_PROXY_TARGET: http://server:8000
     # Port 5173 in this computer mapped to this container's 5173
     ports:
       - "5173:5173"
@@ -25,6 +27,7 @@ services:
       - ./server:/app
     environment:
       DATABASE_URL: postgresql://memoire:memoire_password@db:5432/memoire_dev
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-}
     depends_on:
       - db
 

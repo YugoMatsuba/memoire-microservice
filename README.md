@@ -74,4 +74,33 @@ Use four layers as backend features are implemented:
 - **Domain:** Entities, business rules, and repository interfaces.
 - **Infrastructure:** Repository implementations, ORM models, and external clients.
 
-See the [frontend design](docs/design/adr/005-frontend-software-design.md), [backend design](docs/design/adr/004-backend-software-design.md), and [requirements](docs/requirements.md) for details. The [architecture diagram](docs/design/architecture.md) describes the broader planned system, including future core, chat, and media services.
+See the [frontend design](docs/design/adr/005-frontend-software-design.md), [backend design](docs/design/adr/004-backend-software-design.md), and [requirements](docs/requirements.md) for details.
+
+## High-level system design
+
+**Status — Planned, not yet implemented.**
+
+The React and TypeScript client will use a single API gateway for REST and WebSocket traffic. The gateway will handle authentication and rate limiting and route requests to three FastAPI services.
+
+```mermaid
+flowchart LR
+    Client[React and TypeScript] <-->|REST and WebSocket| Gateway[API Gateway]
+    Gateway --> Core[Core Service]
+    Gateway --> Chat[Chat Service]
+    Gateway --> Media[Media Service]
+    Core --> PostgreSQL[(PostgreSQL)]
+    Chat --> MongoDB[(MongoDB)]
+    Media --> Storage[(S3 or MinIO)]
+    Core -->|Cache| Redis[(Redis)]
+    Media -->|Queue jobs| Redis
+    Redis --> Workers[Celery Workers]
+    Workers --> Storage
+    Workers --> PostgreSQL
+```
+
+- **Core Service** will manage accounts, memories, locations, and social features in PostgreSQL.
+- **Chat Service** will deliver direct and group messages in real time and store conversation history in MongoDB.
+- **Media Service** will handle uploads and access control, with originals and processed files stored in S3 or MinIO.
+- **Redis and Celery** will support caching and background jobs such as thumbnail generation, image compression, metadata extraction, and notifications.
+
+See the [full architecture diagram](docs/design/architecture.md) and [project phases](docs/phase.md).
